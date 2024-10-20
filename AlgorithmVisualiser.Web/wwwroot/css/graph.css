@@ -1,0 +1,14 @@
+.graph {
+    display: flex;
+    align-items: flex-end;
+    width: 100%;
+    height: 20rem;
+    background-color: aquamarine;
+    margin-top: 10px;
+}
+
+.node {
+    background-color: bisque;
+    flex-grow: 5;
+    margin: 1px 1px 1px 1px;
+}

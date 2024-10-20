@@ -1,0 +1,63 @@
+@using AlgorithmVisualiser.Web.Models
+
+<div class="graph">
+    @if (Nodes != null) {
+        @foreach (var node in Nodes)
+        {
+            <div class="node" style=@node.Style></div>
+        }
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public SortNode[]? Nodes { get; set; }
+
+    [Parameter]
+    public bool ShouldSort { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(50);
+        if (Nodes != null && ShouldSort)
+        {
+            var sorted = Sort(Nodes, 0, Nodes.Length, 50);
+            var s = sorted.Select(s => s.Value).ToArray();
+        }
+    }
+
+    private SortNode[] Sort(SortNode[] nodes, int iS, int iE, int delay) {
+
+        if ((iE - iS) <= 1)
+        {
+            if (iS != iE && iE < nodes.Length)
+            {
+                return nodes[iS].Value > nodes[iE].Value
+                    ? new SortNode[] { nodes[iE], nodes[iS] }
+                    : new SortNode[] { nodes[iS], nodes[iE] };
+            }
+
+            return new SortNode[] { nodes[iS] };
+        }
+
+        var iM = (iE + iS) / 2;
+
+        var left = Sort(nodes, iS, iM - 1, delay);
+        var right = Sort(nodes, iM, iE, delay);
+
+        var il = 0;
+        var ir = 0;
+        var sorted = new SortNode[left.Length + right.Length];
+
+        for (var i = 0; i < sorted.Length; i++)
+        {
+            if (il < left.Length && (ir >= right.Length || left[il].Value <= right[ir].Value))
+                sorted[i] = left[il++];
+            else
+                sorted[i] = right[ir++];
+        }
+
+        return sorted;
+    }
+}

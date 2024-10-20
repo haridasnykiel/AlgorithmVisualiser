@@ -1,0 +1,62 @@
+﻿@page "/sorting"
+@using AlgorithmVisualiser.Web.Components
+@using AlgorithmVisualiser.Web.Models
+@using AlgorithmVisualiser.Web.Extensions
+
+<PageTitle>Sorting</PageTitle>
+
+<h1>Sorting</h1>
+
+<p>Sorting Algorithms!!!</p>
+
+<button class="btn btn-primary" @onclick="Randomise">Randomise</button>
+<button class="btn btn-primary" @onclick="MergeSort">Merge Sort</button>
+
+@if (nodes == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    @switch(sortType) {
+        case SortType.MergeSort:
+            <MergeSort Nodes=@nodes ShouldSort=@shouldSort />
+            break;
+        default:
+            <div class="graph">
+                @foreach (var node in nodes)
+                {
+                    <div class="node" style=@node.Style></div>
+                }
+            </div>
+            break;
+
+
+    }
+}
+
+@code {
+    private SortNode[]? nodes;
+    private SortType  sortType;
+    private bool  shouldSort;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(500);
+        shouldSort = false;
+        sortType = SortType.None;
+        Randomise();
+    }
+
+    private void Randomise()
+    { 
+        shouldSort = false;
+        sortType = SortType.None;
+        nodes = SortNodesHelpers.Randomise();
+    }
+
+    private void MergeSort() {
+        sortType = SortType.MergeSort;
+        shouldSort = true;
+    }
+} 
