@@ -1,0 +1,65 @@
+@using AlgorithmVisualiser.Web.Models
+
+<div class="graph">
+    @if (Nodes != null) {
+        @foreach (var node in Nodes)
+        {
+            <div class="node" style=@node.Style></div>
+        }
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public SortNode[]? Nodes { get; set; }
+
+    [Parameter]
+    public bool ShouldSort { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(50);
+        if (Nodes != null && ShouldSort)
+        {
+            var delay = 25;
+            await Sort(Nodes, 0, Nodes.Length, delay);
+            var s = Nodes.Select(s => s.Value).ToArray();
+        }
+    }
+
+    private async Task Sort(SortNode[] nodes, int iS, int iE, int delay) {
+
+        if (iS <= iE)
+        {
+            return;
+        }
+
+        var pivotIdx = Partition(nodes, iS, iE);
+
+        await Sort(nodes, iS, pivotIdx - 1, delay);
+        await Sort(nodes, pivotIdx + 1, iE, delay);
+    }
+
+    private int Partition(SortNode[] nodes, int iS, int iE)
+    {
+        var pivot = nodes[iE];
+
+        var idx = iS - 1;
+
+        for (var i = iS; i < iE; i++)
+        {
+            if (nodes[i].Value <= pivot.Value)
+            {
+                idx++;
+                (nodes[i], nodes[idx]) = (nodes[idx], nodes[i]);
+            }
+        }
+
+        idx++;
+        nodes[iE] = nodes[idx];
+        nodes[idx] = pivot;
+
+        return idx;
+    }
+}

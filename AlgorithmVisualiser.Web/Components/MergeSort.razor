@@ -22,12 +22,12 @@
         await Task.Delay(50);
         if (Nodes != null && ShouldSort)
         {
-            var sorted = Sort(Nodes, 0, Nodes.Length, 50);
-            var s = sorted.Select(s => s.Value).ToArray();
+            var delay = 25;
+            var sorted = await Sort(Nodes, 0, Nodes.Length, delay);
         }
     }
 
-    private SortNode[] Sort(SortNode[] nodes, int iS, int iE, int delay) {
+    private async Task<SortNode[]> Sort(SortNode[] nodes, int iS, int iE, int delay) {
 
         if ((iE - iS) <= 1)
         {
@@ -43,8 +43,8 @@
 
         var iM = (iE + iS) / 2;
 
-        var left = Sort(nodes, iS, iM - 1, delay);
-        var right = Sort(nodes, iM, iE, delay);
+        var left = await Sort(nodes, iS, iM - 1, delay);
+        var right = await Sort(nodes, iM, iE, delay);
 
         var il = 0;
         var ir = 0;
@@ -56,6 +56,18 @@
                 sorted[i] = left[il++];
             else
                 sorted[i] = right[ir++];
+        }
+
+        var sortedIdx = 0;
+        for(var i = iS; i < iE; i++) {
+            Nodes![i] = sorted[sortedIdx];
+            sorted[sortedIdx].AddSwapStyle();
+            StateHasChanged();
+            await Task.Delay(delay);
+            sorted[sortedIdx].RemoveBackgroundStyle();
+            StateHasChanged();
+            await Task.Delay(delay);
+            sortedIdx++;
         }
 
         return sorted;
