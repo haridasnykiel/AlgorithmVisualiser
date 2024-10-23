@@ -23,25 +23,24 @@
         if (Nodes != null && ShouldSort)
         {
             var delay = 25;
-            await Sort(Nodes, 0, Nodes.Length, delay);
-            var s = Nodes.Select(s => s.Value).ToArray();
+            await Sort(Nodes, 0, Nodes.Length - 1, delay);
         }
     }
 
     private async Task Sort(SortNode[] nodes, int iS, int iE, int delay) {
 
-        if (iS <= iE)
+        if (iS >= iE)
         {
             return;
         }
 
-        var pivotIdx = Partition(nodes, iS, iE);
+        var pivotIdx = await Partition(nodes, iS, iE, delay);
 
         await Sort(nodes, iS, pivotIdx - 1, delay);
         await Sort(nodes, pivotIdx + 1, iE, delay);
     }
 
-    private int Partition(SortNode[] nodes, int iS, int iE)
+    private async Task<int> Partition(SortNode[] nodes, int iS, int iE, int delay)
     {
         var pivot = nodes[iE];
 
@@ -53,13 +52,31 @@
             {
                 idx++;
                 (nodes[i], nodes[idx]) = (nodes[idx], nodes[i]);
+                nodes[i].AddSwapStyle();
+                nodes[idx].AddSwapStyle();
+                await StateChangedAndDelay(delay);
+                nodes[i].RemoveBackgroundStyle();
+                nodes[idx].RemoveBackgroundStyle();
+                await StateChangedAndDelay(delay);
             }
         }
 
         idx++;
         nodes[iE] = nodes[idx];
         nodes[idx] = pivot;
+        nodes[iE].AddSwapStyle();
+        nodes[idx].AddSwapStyle();
+        await StateChangedAndDelay(delay);
+        nodes[iE].RemoveBackgroundStyle();
+        nodes[idx].RemoveBackgroundStyle();
+        await StateChangedAndDelay(delay);
 
         return idx;
     }
+
+    private async Task StateChangedAndDelay(int delay)
+    {
+        StateHasChanged();
+        await Task.Delay(delay);
+    } 
 }

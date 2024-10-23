@@ -1,4 +1,3 @@
-using System.Reflection.Metadata.Ecma335;
 using AlgorithmVisualiser.Web.Models;
 
 namespace AlgorithmVisualiser.Web.Extensions;

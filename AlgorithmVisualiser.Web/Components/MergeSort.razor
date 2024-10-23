@@ -62,14 +62,18 @@
         for(var i = iS; i < iE; i++) {
             Nodes![i] = sorted[sortedIdx];
             sorted[sortedIdx].AddSwapStyle();
-            StateHasChanged();
-            await Task.Delay(delay);
+            await StateChangedAndDelay(delay);
             sorted[sortedIdx].RemoveBackgroundStyle();
-            StateHasChanged();
-            await Task.Delay(delay);
+            await StateChangedAndDelay(delay);
             sortedIdx++;
         }
 
         return sorted;
     }
+
+    private async Task StateChangedAndDelay(int delay)
+    {
+        StateHasChanged();
+        await Task.Delay(delay);
+    } 
 }
