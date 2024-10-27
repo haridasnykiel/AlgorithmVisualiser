@@ -48,6 +48,8 @@
 
         for (var i = iS; i < iE; i++)
         {
+            nodes[i].AddSelectStyle();
+            await StateChangedAndDelay(delay);
             if (nodes[i].Value <= pivot.Value)
             {
                 idx++;
@@ -55,10 +57,10 @@
                 nodes[i].AddSwapStyle();
                 nodes[idx].AddSwapStyle();
                 await StateChangedAndDelay(delay);
-                nodes[i].RemoveBackgroundStyle();
                 nodes[idx].RemoveBackgroundStyle();
-                await StateChangedAndDelay(delay);
             }
+            nodes[i].RemoveBackgroundStyle();
+            await StateChangedAndDelay(delay);
         }
 
         idx++;

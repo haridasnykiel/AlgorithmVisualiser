@@ -1,0 +1,63 @@
+@using AlgorithmVisualiser.Web.Models
+
+<div class="graph">
+    @if (Nodes != null) {
+        @foreach (var node in Nodes)
+        {
+            <div class="node" style=@node.Style></div>
+        }
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public SortNode[]? Nodes { get; set; }
+
+    [Parameter]
+    public bool ShouldSort { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(50);
+        if (Nodes != null && ShouldSort)
+        {
+            var delay = 20;
+            await Sort(Nodes, delay);
+        }
+    }
+
+    private async Task Sort(SortNode[] nodes, int delay) 
+    {
+        var isSorted = false;
+
+        while (!isSorted)
+        {
+            isSorted = true;
+            for (var i = 0; i < nodes.Length - 1; i++)
+            {
+                var item = nodes[i];
+                var next = nodes[i+1];
+                item.AddSelectStyle();
+                StateHasChanged();
+                await Task.Delay(delay);
+
+                if(item.Value > next.Value) 
+                {
+                    item.AddSwapStyle();
+                    next.AddSwapStyle();
+                    StateHasChanged();
+                    await Task.Delay(delay);
+                    nodes[i+1] = item;
+                    nodes[i] = next;
+                    isSorted = false;
+                    next.RemoveBackgroundStyle();
+                }
+
+                item.RemoveBackgroundStyle();
+                StateHasChanged();
+                await Task.Delay(delay);
+            }
+        }
+    }
+}

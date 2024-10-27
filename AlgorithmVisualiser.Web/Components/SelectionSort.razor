@@ -1,0 +1,63 @@
+@using AlgorithmVisualiser.Web.Models
+
+<div class="graph">
+    @if (Nodes != null) {
+        @foreach (var node in Nodes)
+        {
+            <div class="node" style=@node.Style></div>
+        }
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public SortNode[]? Nodes { get; set; }
+
+    [Parameter]
+    public bool ShouldSort { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(50);
+        if (Nodes != null && ShouldSort)
+        {
+            var delay = 20;
+            await Sort(Nodes, delay);
+        }
+    }
+
+    private async Task Sort(SortNode[] nodes, int delay) 
+    {
+        var swapIdx = 0;
+        while (swapIdx < nodes.Length)
+        {
+            var lowestValueIdx = swapIdx;
+            for (var i = swapIdx; i < nodes.Length; i++)
+            {
+                nodes[i].AddSelectStyle();
+                StateHasChanged();
+                await Task.Delay(delay);
+                if (nodes[i].Value < nodes[lowestValueIdx].Value) lowestValueIdx = i;
+                nodes[i].RemoveBackgroundStyle();
+                StateHasChanged();
+                await Task.Delay(delay);
+            }
+           
+            if (swapIdx != lowestValueIdx)
+            {
+                nodes[swapIdx].AddSwapStyle();
+                nodes[lowestValueIdx].AddSwapStyle();
+                StateHasChanged();
+                await Task.Delay(delay);
+                (nodes[swapIdx], nodes[lowestValueIdx]) = (nodes[lowestValueIdx], nodes[swapIdx]);
+                nodes[swapIdx].RemoveBackgroundStyle();
+                nodes[lowestValueIdx].RemoveBackgroundStyle();
+                StateHasChanged();
+                await Task.Delay(delay);
+            }
+
+            swapIdx++;
+        }
+    }
+}

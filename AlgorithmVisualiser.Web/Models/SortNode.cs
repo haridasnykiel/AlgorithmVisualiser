@@ -19,5 +19,6 @@ public class SortNode
     public string Style => _style + (_backgroundStyle ?? string.Empty);
 
     public void AddSwapStyle() => _backgroundStyle = " background-color: red;";
+    public void AddSelectStyle() => _backgroundStyle = " background-color: black;";
     public void RemoveBackgroundStyle() => _backgroundStyle = null;
 }

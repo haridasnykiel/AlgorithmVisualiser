@@ -12,6 +12,8 @@
 <button class="btn btn-primary" @onclick="Randomise">Randomise</button>
 <button class="btn btn-primary" @onclick="MergeSort">Merge Sort</button>
 <button class="btn btn-primary" @onclick="QuickSort">Quick Sort</button>
+<button class="btn btn-primary" @onclick="SelectionSort">Selection Sort</button>
+<button class="btn btn-primary" @onclick="BubbleSort">Bubble Sort</button>
 
 @if (nodes == null)
 {
@@ -25,6 +27,12 @@ else
             break;
         case SortType.QuickSort:
             <QuickSort Nodes=@nodes ShouldSort=@shouldSort />
+            break;
+        case SortType.SelectionSort:
+            <SelectionSort Nodes=@nodes ShouldSort=@shouldSort />
+            break;
+        case SortType.BubbleSort:
+            <BubbleSort Nodes=@nodes ShouldSort=@shouldSort />
             break;
         default:
             <div class="graph">
@@ -62,8 +70,21 @@ else
         shouldSort = true;
     }
 
-    private void QuickSort() {
+    private void QuickSort()
+    {
         sortType = SortType.QuickSort;
+        shouldSort = true;
+    }
+
+    private void SelectionSort()
+    {
+        sortType = SortType.SelectionSort;
+        shouldSort = true;
+    }
+
+    private void BubbleSort()
+    {
+        sortType = SortType.BubbleSort;
         shouldSort = true;
     }
 } 

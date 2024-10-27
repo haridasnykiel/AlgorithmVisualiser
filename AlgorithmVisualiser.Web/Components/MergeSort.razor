@@ -53,9 +53,17 @@
         for (var i = 0; i < sorted.Length; i++)
         {
             if (il < left.Length && (ir >= right.Length || left[il].Value <= right[ir].Value))
+            {
+                left[il].AddSelectStyle();
+                await StateChangedAndDelay(delay);
                 sorted[i] = left[il++];
+            }
             else
+            {
+                right[ir].AddSelectStyle();
+                await StateChangedAndDelay(delay);
                 sorted[i] = right[ir++];
+            }
         }
 
         var sortedIdx = 0;
