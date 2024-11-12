@@ -14,29 +14,36 @@
 <button class="btn btn-primary" @onclick="QuickSort">Quick Sort</button>
 <button class="btn btn-primary" @onclick="SelectionSort">Selection Sort</button>
 <button class="btn btn-primary" @onclick="BubbleSort">Bubble Sort</button>
+<button class="btn btn-primary" @onclick="HeapSort">Heap Sort</button>
 
-@if (nodes == null)
+@if (_nodes == null)
 {
-    <p><em>Loading...</em></p>
+    <p>
+        <em>Loading...</em>
+    </p>
 }
 else
 {
-    @switch(sortType) {
+    @switch (_sortType)
+    {
         case SortType.MergeSort:
-            <MergeSort Nodes=@nodes ShouldSort=@shouldSort />
+            <MergeSort Nodes=@_nodes ShouldSort=@_shouldSort/>
             break;
         case SortType.QuickSort:
-            <QuickSort Nodes=@nodes ShouldSort=@shouldSort />
+            <QuickSort Nodes=@_nodes ShouldSort=@_shouldSort/>
             break;
         case SortType.SelectionSort:
-            <SelectionSort Nodes=@nodes ShouldSort=@shouldSort />
+            <SelectionSort Nodes=@_nodes ShouldSort=@_shouldSort/>
             break;
         case SortType.BubbleSort:
-            <BubbleSort Nodes=@nodes ShouldSort=@shouldSort />
+            <BubbleSort Nodes=@_nodes ShouldSort=@_shouldSort/>
+            break;
+        case SortType.HeapSort:
+            <HeapSort Nodes=@_nodes ShouldSort=@_shouldSort/>
             break;
         default:
             <div class="graph">
-                @foreach (var node in nodes)
+                @foreach (var node in _nodes)
                 {
                     <div class="node" style=@node.Style></div>
                 }
@@ -46,45 +53,52 @@ else
 }
 
 @code {
-    private SortNode[]? nodes;
-    private SortType  sortType;
-    private bool  shouldSort;
+    private SortNode[]? _nodes;
+    private SortType _sortType;
+    private bool _shouldSort;
 
     protected override async Task OnInitializedAsync()
     {
         await Task.Delay(500);
-        shouldSort = false;
-        sortType = SortType.None;
+        _shouldSort = false;
+        _sortType = SortType.None;
         Randomise();
     }
 
     private void Randomise()
-    { 
-        shouldSort = false;
-        sortType = SortType.None;
-        nodes = SortNodesHelpers.Randomise();
+    {
+        _shouldSort = false;
+        _sortType = SortType.None;
+        _nodes = SortNodesHelpers.Randomise();
     }
 
-    private void MergeSort() {
-        sortType = SortType.MergeSort;
-        shouldSort = true;
+    private void MergeSort()
+    {
+        _sortType = SortType.MergeSort;
+        _shouldSort = true;
     }
 
     private void QuickSort()
     {
-        sortType = SortType.QuickSort;
-        shouldSort = true;
+        _sortType = SortType.QuickSort;
+        _shouldSort = true;
     }
 
     private void SelectionSort()
     {
-        sortType = SortType.SelectionSort;
-        shouldSort = true;
+        _sortType = SortType.SelectionSort;
+        _shouldSort = true;
     }
 
     private void BubbleSort()
     {
-        sortType = SortType.BubbleSort;
-        shouldSort = true;
+        _sortType = SortType.BubbleSort;
+        _shouldSort = true;
     }
-} 
+
+    private void HeapSort()
+    {
+        _sortType = SortType.HeapSort;
+        _shouldSort = true;
+    }
+}
