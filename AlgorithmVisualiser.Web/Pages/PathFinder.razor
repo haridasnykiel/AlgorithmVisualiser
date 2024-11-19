@@ -1,0 +1,149 @@
+@page "/pathfinder"
+@using System.Xml
+@using AlgorithmVisualiser.Web.Helpers
+@using AlgorithmVisualiser.Web.Models
+
+<PageTitle>PathFinders</PageTitle>
+
+<h1>PathFinders</h1>
+
+<p>Path Finding Algorithms!!!</p>
+
+<button class="btn btn-primary" @onclick="Bfs">Breadth First Search</button>
+
+@if (_nodes == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <div class="maze">
+        @foreach (var node in _nodes)
+        {
+            <div class="maze-node @node.Style">@node.Value @node.Column @node.Row</div>
+            _rowIdx++;
+            if (_rowIdx >= MaxRowSize)
+            {
+                _columnIdx++;
+                _rowIdx = 0;
+                <div class="line-break"></div>
+            }
+        }
+    </div>
+}
+
+@code {
+    private GraphNode[]? _nodes;
+    private const int MaxRowSize = 10;
+    private int _rowIdx;
+    private int _columnIdx;
+    private List<(int Column, int Row)> Directions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(500);
+        Randomise();
+        Directions = new List<(int, int)> { (1, 0), (0, 1), (1, 1), (-1, 0), (0, -1), (-1, -1) };
+        AddNodePositions();
+        AddAllConnections();
+    }
+
+    private void Randomise()
+    {
+        _nodes = NodesHelpers.Create100GraphNodes();
+    }
+
+    private void AddAllConnections()
+    {
+        if (_nodes == null) return;
+
+        foreach (var node in _nodes)
+        {
+            foreach (var direction in Directions)
+            {
+                var nextNodeColumn = node.Column + direction.Column;
+                var nextNodeRow = node.Row + direction.Row;
+
+                var nextNode = _nodes.FirstOrDefault(n => n.Column == nextNodeColumn && n.Row == nextNodeRow);
+
+                if (nextNode != null)
+                {
+                    node.AddConnection(nextNode);
+                }
+            }
+        }
+    }
+
+    private void AddNodePositions()
+    {
+        if (_nodes == null) return;
+
+        for (int i = 0; i < _nodes.Length; i++)
+        {
+            _nodes[i].AddColumnIdx(_columnIdx);
+            _nodes[i].AddRowIdx(_rowIdx);
+            _rowIdx++;
+
+            if (_rowIdx >= MaxRowSize)
+            {
+                _columnIdx++;
+                _rowIdx = 0;
+            }
+        }
+    }
+
+    private async Task Bfs()
+    {
+        if (_nodes == null) return;
+
+        var node = await BreadthFirstSearch(_nodes[10], new HashSet<string>(), new Queue<GraphNode>(), "89");
+        if (node == null)
+        {
+            Console.WriteLine("Node Not found");
+        }
+
+        node.AddFoundStyle();
+        StateHasChanged();
+        await Task.Delay(25);
+
+        Console.WriteLine($"{node.Column}, {node.Row}, {node.Value}");
+    }
+
+    private async Task<GraphNode?> BreadthFirstSearch(GraphNode startingNode, HashSet<string> visited, Queue<GraphNode> queue, string pin)
+    {
+        queue.Enqueue(startingNode);
+        visited.Add(startingNode.Value);
+        startingNode.AddVisitedStyle();
+        StateHasChanged();
+        await Task.Delay(25);
+        GraphNode? result = null;
+        while (queue.Count > 0)
+        {
+            var node = queue.Dequeue();
+            if (node.Value == pin)
+            {
+                result = node;
+                break;
+            }
+
+            foreach (var edge in node.Connections)
+            {
+                if (edge == null || visited.Contains(edge.Value))
+                {
+                    continue;
+                }
+
+                visited.Add(edge.Value);
+                queue.Enqueue(edge);
+                edge.AddVisitedStyle();
+                StateHasChanged();
+                await Task.Delay(25);
+            }
+        }
+
+        return result;
+    }
+
+}

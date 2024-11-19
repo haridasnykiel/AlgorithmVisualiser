@@ -1,7 +1,7 @@
 ﻿@page "/sorting"
 @using AlgorithmVisualiser.Web.Components
+@using AlgorithmVisualiser.Web.Helpers
 @using AlgorithmVisualiser.Web.Models
-@using AlgorithmVisualiser.Web.Extensions
 
 <PageTitle>Sorting</PageTitle>
 
@@ -69,7 +69,7 @@ else
     {
         _shouldSort = false;
         _sortType = SortType.None;
-        _nodes = SortNodesHelpers.Randomise();
+        _nodes = NodesHelpers.Randomise();
     }
 
     private void MergeSort()

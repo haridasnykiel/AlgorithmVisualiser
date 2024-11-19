@@ -12,3 +12,26 @@
     flex-grow: 5;
     margin: 1px 1px 1px 1px;
 }
+
+.maze {
+    display: flex;
+    flex-flow: row wrap;
+    align-content: space-between;
+    justify-content: space-between;
+    width: 100%;
+    height: 50rem;
+    background-color: ghostwhite;
+    margin-top: 20px;
+}
+
+.maze-node {
+    background-color: #1b6ec2;
+    text-align: center;
+    width: 9%;
+    height: 10%;
+    flex-grow: 5;
+    margin: 1px 1px 1px 1px;
+}
+.line-break {
+    width: 100%;
+}
