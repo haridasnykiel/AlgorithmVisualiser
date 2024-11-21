@@ -50,7 +50,7 @@ public class GraphNode
     }
 
     public void AddFoundStyle() => _style = " background-color: red;";
-    public void AddVisitedStyle() => _style = " background-color: black;";
+    public void AddVisitedStyle() => _style = " background-color: orange;";
     public void RemoveBackgroundStyle() => _style = null;
 
     public string Style => _style;
