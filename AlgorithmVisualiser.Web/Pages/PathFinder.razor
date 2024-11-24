@@ -9,6 +9,7 @@
 <p>Path Finding Algorithms!!!</p>
 
 <button class="btn btn-primary" @onclick="Bfs">Breadth First Search</button>
+<button class="btn btn-primary" @onclick="Dfs">Depth First Search</button>
 
 @if (_nodes == null)
 {
@@ -146,5 +147,50 @@ else
 
         return result;
     }
+
+    private async Task Dfs()
+    {
+        if (_nodes == null) return;
+
+        var node = await DepthFirstSearch(_nodes[11], new HashSet<string>(), "89");
+        if (node == null)
+        {
+            Console.WriteLine("Node Not found");
+        }
+
+        node.AddFoundStyle();
+        StateHasChanged();
+        await Task.Delay(25);
+
+        Console.WriteLine($"{node.Column}, {node.Row}, {node.Value}");
+    }
+
+    private async Task<GraphNode?> DepthFirstSearch(GraphNode node, HashSet<string> visited, string pin)
+    {
+        if (node.Value == pin) return node;
+
+        visited.Add(node.Value);
+
+        node.AddVisitedStyle();
+        StateHasChanged();
+        await Task.Delay(25);
+
+        GraphNode? result = null;
+        foreach (var edge in node.Connections)
+        {
+            if (edge == null) continue;
+
+            if (visited.Contains(edge.Value)) continue;
+
+            result = await DepthFirstSearch(edge, visited, pin);
+
+            Console.WriteLine($"{result?.Value}");
+            
+            if(result?.Value == pin) break;
+        }
+
+        return result;
+    }
+
 
 }

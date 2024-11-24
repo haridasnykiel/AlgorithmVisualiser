@@ -10,7 +10,7 @@ public class GraphNode
     private int _romIdx;
     private int _columnIdx;
     private string _style;
-    
+
     public GraphNode(string value, int connectionsLength)
     {
         _value = value;
@@ -33,6 +33,7 @@ public class GraphNode
             Array.Copy(_connections, newConnections, _connections.Length);
             _connections = newConnections;
         }
+
         _connections[_connectionIdx] = node;
         _connectionIdx++;
     }
@@ -42,7 +43,7 @@ public class GraphNode
         _romIdx = rowIdx;
         return this;
     }
-    
+
     public GraphNode AddColumnIdx(int columnIdx)
     {
         _columnIdx = columnIdx;
