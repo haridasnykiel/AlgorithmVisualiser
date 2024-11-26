@@ -8,6 +8,7 @@
 
 <p>Path Finding Algorithms!!!</p>
 
+<button class="btn btn-primary" @onclick="Reset">Reset</button>
 <button class="btn btn-primary" @onclick="Bfs">Breadth First Search</button>
 <button class="btn btn-primary" @onclick="Dfs">Depth First Search</button>
 
@@ -22,7 +23,17 @@ else
     <div class="maze">
         @foreach (var node in _nodes)
         {
-            <div class="maze-node" style=@node.Style>@node.Value @node.Column @node.Row</div>
+            @if (_startNode == null)
+            {
+                <button class="maze-node" @onclick="@(e => SetStartNode(node))"
+                        style=@node.Style>@node.Value @node.Column @node.Row</button>
+            }
+            else
+            {
+                <button class="maze-node" @onclick="@(e => SetDestinationNode(node))"
+                        style=@node.Style>@node.Value @node.Column @node.Row</button>
+            }
+
             if (node.Row >= MaxRowSize)
             {
                 <div class="line-break"></div>
@@ -35,6 +46,8 @@ else
     private GraphNode[]? _nodes;
     private const int MaxRowSize = 10;
     private List<(int Column, int Row)>? _directions;
+    private GraphNode? _startNode;
+    private string? _destinationNodeValue;
 
     protected override async Task OnInitializedAsync()
     {
@@ -96,7 +109,8 @@ else
     {
         if (_nodes == null) return;
 
-        var node = await BreadthFirstSearch(_nodes[10], "89");
+        if (_startNode == null || string.IsNullOrEmpty(_destinationNodeValue)) return;
+        var node = await BreadthFirstSearch(_startNode, _destinationNodeValue);
         if (node == null)
         {
             Console.WriteLine("Node Not found");
@@ -142,7 +156,15 @@ else
                 edge.AddVisitedStyle();
                 StateHasChanged();
                 await Task.Delay(25);
+
+                if (edge.Value == pin)
+                {
+                    result = edge;
+                    break;
+                }
             }
+
+            if (result != null) break;
         }
 
         return result;
@@ -152,7 +174,8 @@ else
     {
         if (_nodes == null) return;
 
-        var node = await DepthFirstSearch(_nodes[11], new HashSet<string>(), "89");
+        if (_startNode == null || string.IsNullOrEmpty(_destinationNodeValue)) return;
+        var node = await DepthFirstSearch(_startNode, new HashSet<string>(), _destinationNodeValue);
         if (node == null)
         {
             Console.WriteLine("Node Not found");
@@ -185,12 +208,37 @@ else
             result = await DepthFirstSearch(edge, visited, pin);
 
             Console.WriteLine($"{result?.Value}");
-            
-            if(result?.Value == pin) break;
+
+            if (result?.Value == pin) break;
         }
 
         return result;
     }
 
+    private void SetStartNode(GraphNode startNode)
+    {
+        _startNode = startNode;
+        _startNode.AddStartNodeStyle();
+        StateHasChanged();
+    }
+
+    private void SetDestinationNode(GraphNode destinationNode)
+    {
+        _destinationNodeValue = destinationNode.Value;
+        destinationNode.AddDestinationNodeStyle();
+        StateHasChanged();
+    }
+
+    private void Reset()
+    {
+        _startNode = null;
+        _destinationNodeValue = null;
+        foreach (var node in _nodes)
+        {
+            node.RemoveBackgroundStyle();
+        }
+
+        StateHasChanged();
+    }
 
 }
