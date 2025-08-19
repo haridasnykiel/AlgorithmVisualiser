@@ -1,0 +1,130 @@
+@page "/search"
+@using AlgorithmVisualiser.Web.Algorithms
+@using AlgorithmVisualiser.Web.Helpers
+@using AlgorithmVisualiser.Web.Models
+
+<PageTitle>Search</PageTitle>
+
+<h1>Search</h1>
+
+<p>Search Algorithms!!!</p>
+
+<button class="btn btn-primary" @onclick="Reset">Reset</button>
+<button class="btn btn-primary" @onclick="Bfs">Breadth First Search</button>
+<button class="btn btn-primary" @onclick="Dfs">Depth First Search</button>
+
+@if (_nodes == null)
+{
+  <p>
+    <em>Loading...</em>
+  </p>
+}
+else
+{
+  <div class="maze">
+    @foreach (var node in _nodes)
+    {
+      @if (_startNode == null)
+      {
+        <button class="maze-node" @onclick="@(e => SetStartNode(node))"
+                style=@node.Style>@node.Value</button>
+      }
+      else
+      {
+        <button class="maze-node" @onclick="@(e => SetDestinationNode(node))"
+                style=@node.Style>@node.Value</button>
+      }
+
+      if (node.Row >= NodeHelper.Max)
+      {
+        <div class="line-break"></div>
+      }
+    }
+  </div>
+}
+
+@code {
+  private GraphNode[]? _nodes;
+  private List<(int Column, int Row)>? _directions;
+  private GraphNode? _startNode;
+  private GraphNode? _destinationNode;
+
+  protected override async Task OnInitializedAsync()
+  {
+    await Task.Delay(500);
+    CreateNodes();
+  }
+
+  private void CreateNodes()
+  {
+    _nodes = NodeHelper.Create100GraphNodes();
+  }
+
+  private async Task Bfs()
+  {
+    Guard();
+    await BreadthFirstSearch.Execute(_nodes!, _startNode!, _destinationNode!, async () =>
+    {
+      StateHasChanged();
+      await Task.Delay(25);
+    });
+  }
+
+  private async Task Dfs()
+  {
+    Guard();
+    await DepthFirstSearch.Execute(_nodes!, _startNode!, _destinationNode!, async () =>
+    {
+      StateHasChanged();
+      await Task.Delay(25);
+    });
+  }
+
+  private void Guard()
+  {
+    if (_nodes is null)
+    {
+      throw new NullReferenceException("Nodes is null.");
+    }
+    if (_startNode is null)
+    {
+      throw new NullReferenceException("Start node is null.");
+    }
+    if (_destinationNode is null)
+    {
+      throw new NullReferenceException("Destination node is null.");
+    }
+  }
+
+  private void SetStartNode(GraphNode startNode)
+  {
+    _startNode = startNode;
+    _startNode.AddStartNodeStyle();
+    _startNode.SetStart();
+    StateHasChanged();
+  }
+
+  private void SetDestinationNode(GraphNode destinationNode)
+  {
+    _destinationNode = destinationNode;
+    destinationNode.AddDestinationNodeStyle();
+    destinationNode.SetDestination();
+    StateHasChanged();
+  }
+
+  private void Reset()
+  {
+    _startNode?.Reset();
+    _destinationNode?.Reset();
+    _startNode = null;
+    _destinationNode = null;
+
+    if (_nodes == null) return;
+
+    foreach (var node in _nodes)
+    {
+      node.Reset();
+    }
+    StateHasChanged();
+  }
+}

@@ -1,6 +1,6 @@
 ﻿<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">AlgorithmVisualiser.Web</a>
+        <a class="navbar-brand" href="">An Algorithm Visualiser</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -8,7 +8,7 @@
 </div>
 
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="flex-column">
+    <nav class="flex-row">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
@@ -25,8 +25,8 @@
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="pathfinder">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Path Finder
+            <NavLink class="nav-link" href="search">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Search
             </NavLink>
         </div>
     </nav>

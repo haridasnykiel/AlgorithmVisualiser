@@ -34,11 +34,11 @@
             if (iS != iE && iE < nodes.Length)
             {
                 return nodes[iS].Value > nodes[iE].Value
-                    ? new SortNode[] { nodes[iE], nodes[iS] }
-                    : new SortNode[] { nodes[iS], nodes[iE] };
+                    ? [nodes[iE], nodes[iS]]
+                    : [nodes[iS], nodes[iE]];
             }
 
-            return new SortNode[] { nodes[iS] };
+            return [nodes[iS]];
         }
 
         var iM = (iE + iS) / 2;
