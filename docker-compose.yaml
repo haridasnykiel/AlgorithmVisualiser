@@ -1,0 +1,9 @@
+﻿services:
+  algorithmvisualiser.web:
+    image: algorithmvisualiser.web
+    build:
+      context: .
+      dockerfile: AlgorithmVisualiser.Web/Dockerfile
+    ports:
+      - "8080:80"
+

@@ -21,7 +21,6 @@ internal static class DepthFirstSearch
 
     node.AddFoundStyle();
     await stateChangedAction();
-    await SearchPathFinder.Find(node, startNode, stateChangedAction);
   }
 
   private static async Task<GraphNode?> Dfs(

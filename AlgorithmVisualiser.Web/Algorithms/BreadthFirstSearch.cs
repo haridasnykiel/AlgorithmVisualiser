@@ -21,7 +21,6 @@ internal static class BreadthFirstSearch
 
     node.AddFoundStyle();
     await stateChanged();
-    await SearchPathFinder.Find(node, startNode, stateChanged);
   }
 
   private static async Task<GraphNode?> Bfs(GraphNode startingNode, string pin, Func<Task> stateChanged)

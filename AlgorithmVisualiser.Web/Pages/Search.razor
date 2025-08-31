@@ -12,6 +12,7 @@
 <button class="btn btn-primary" @onclick="Reset">Reset</button>
 <button class="btn btn-primary" @onclick="Bfs">Breadth First Search</button>
 <button class="btn btn-primary" @onclick="Dfs">Depth First Search</button>
+<button class="btn btn-primary" @onclick="FindPath">Find A Path</button>
 
 @if (_nodes == null)
 {
@@ -48,11 +49,19 @@ else
   private List<(int Column, int Row)>? _directions;
   private GraphNode? _startNode;
   private GraphNode? _destinationNode;
+  private bool _hasSearched;
+  private Func<Task>? _stateChangedAndDelay; 
 
   protected override async Task OnInitializedAsync()
   {
     await Task.Delay(500);
     CreateNodes();
+    _hasSearched = false;
+    _stateChangedAndDelay = async () =>
+    {
+      StateHasChanged();
+      await Task.Delay(25);
+    };
   }
 
   private void CreateNodes()
@@ -63,21 +72,22 @@ else
   private async Task Bfs()
   {
     Guard();
-    await BreadthFirstSearch.Execute(_nodes!, _startNode!, _destinationNode!, async () =>
-    {
-      StateHasChanged();
-      await Task.Delay(25);
-    });
+    await BreadthFirstSearch.Execute(_nodes!, _startNode!, _destinationNode!, _stateChangedAndDelay!);
+    _hasSearched = true;
   }
 
   private async Task Dfs()
   {
     Guard();
-    await DepthFirstSearch.Execute(_nodes!, _startNode!, _destinationNode!, async () =>
-    {
-      StateHasChanged();
-      await Task.Delay(25);
-    });
+    await DepthFirstSearch.Execute(_nodes!, _startNode!, _destinationNode!, _stateChangedAndDelay!);
+    _hasSearched = true;
+  }
+  
+  private async Task FindPath()
+  {
+    Guard();
+    if(!_hasSearched) return;
+    await SearchPathFinder.Find(_destinationNode, _startNode, _stateChangedAndDelay!);
   }
 
   private void Guard()
@@ -93,6 +103,10 @@ else
     if (_destinationNode is null)
     {
       throw new NullReferenceException("Destination node is null.");
+    }
+    if(_stateChangedAndDelay is null) 
+    {
+      throw new NullReferenceException("StateChangedAndDelay function is null.");
     }
   }
 
@@ -118,6 +132,7 @@ else
     _destinationNode?.Reset();
     _startNode = null;
     _destinationNode = null;
+    _hasSearched = false;
 
     if (_nodes == null) return;
 
