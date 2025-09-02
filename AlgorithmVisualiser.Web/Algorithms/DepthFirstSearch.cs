@@ -8,12 +8,13 @@ internal static class DepthFirstSearch
     GraphNode[]? nodes,
     GraphNode? startNode,
     GraphNode? destinationNode,
-    Func<Task> stateChangedAction)
+    Func<Task> stateChangedAction,
+    CancellationToken ct)
   {
     if (nodes == null) return;
 
     if (startNode == null || destinationNode == null) return;
-    var node = await Dfs(startNode, new HashSet<string>(), destinationNode.Value, stateChangedAction);
+    var node = await Dfs(startNode, new HashSet<string>(), destinationNode.Value, stateChangedAction, ct);
     if (node == null)
     {
       return;
@@ -27,12 +28,13 @@ internal static class DepthFirstSearch
     GraphNode node,
     HashSet<string> visited,
     string pin,
-    Func<Task> stateChangedAction)
+    Func<Task> stateChangedAction,
+    CancellationToken ct)
   {
+    if(ct.IsCancellationRequested) return null;
     if (node.Value == pin) return node;
 
     visited.Add(node.Value);
-
     node.SetVisited();
     if (!node.IsStart && !node.IsDestination)
     {
@@ -47,7 +49,7 @@ internal static class DepthFirstSearch
 
       if (visited.Contains(edge.Value)) continue;
 
-      result = await Dfs(edge, visited, pin, stateChangedAction);
+      result = await Dfs(edge, visited, pin, stateChangedAction, ct);
 
       if (result?.Value == pin)
       {

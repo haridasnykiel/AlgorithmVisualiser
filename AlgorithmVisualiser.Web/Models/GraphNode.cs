@@ -31,6 +31,10 @@ public class GraphNode
     public string Value => _value;
     public int Column => _columnIdx;
     public int Row => _romIdx;
+    public bool IsStart => _isStart;
+    public bool IsDestination => _isDestination;
+    public string Style => _style;
+
 
     public ImmutableArray<GraphNode?> Connections => [.._connections];
 
@@ -82,8 +86,11 @@ public class GraphNode
     public void SetDestination() => _isDestination = true;
     public void SetVisited() => _hasVisited = true;
     public void SetIsPartOfReturnPath() => _isPartOfReturnPath = true;
-    public bool IsStart => _isStart;
-    public bool IsDestination => _isDestination;
+    public void AddFoundStyle() => _style = " background-color: red;";
+    public void AddStartNodeStyle() => _style = " background-color: aqua;";
+    public void AddDestinationNodeStyle() => _style = " background-color: chartreuse;";
+    public void AddPathNodeStyle() => _style = " background-color: purple;";
+    public void AddVisitedStyle() => _style = " background-color: orange;";
 
     public void Reset()
     {
@@ -94,11 +101,4 @@ public class GraphNode
       _style = null;
     }
 
-    public void AddFoundStyle() => _style = " background-color: red;";
-    public void AddStartNodeStyle() => _style = " background-color: aqua;";
-    public void AddDestinationNodeStyle() => _style = " background-color: chartreuse;";
-    public void AddPathNodeStyle() => _style = " background-color: purple;";
-    public void AddVisitedStyle() => _style = " background-color: orange;";
-
-    public string Style => _style;
 }

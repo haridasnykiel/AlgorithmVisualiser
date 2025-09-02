@@ -8,12 +8,13 @@ internal static class BreadthFirstSearch
     GraphNode[]? nodes,
     GraphNode? startNode,
     GraphNode? destinationNode,
-    Func<Task> stateChanged)
+    Func<Task> stateChanged,
+    CancellationToken ct)
   {
     if (nodes == null) return;
 
     if (startNode == null || destinationNode == null) return;
-    var node = await Bfs(startNode, destinationNode.Value, stateChanged);
+    var node = await Bfs(startNode, destinationNode.Value, stateChanged, ct);
     if (node == null)
     {
       return;
@@ -23,7 +24,11 @@ internal static class BreadthFirstSearch
     await stateChanged();
   }
 
-  private static async Task<GraphNode?> Bfs(GraphNode startingNode, string pin, Func<Task> stateChanged)
+  private static async Task<GraphNode?> Bfs(
+    GraphNode startingNode,
+    string pin,
+    Func<Task> stateChanged,
+    CancellationToken ct)
   {
     var visited = new HashSet<string>();
     var queue = new Queue<GraphNode>();
@@ -35,6 +40,10 @@ internal static class BreadthFirstSearch
     GraphNode? result = null;
     while (queue.Count > 0)
     {
+      if (ct.IsCancellationRequested)
+      {
+        return result;
+      }
       var node = queue.Dequeue();
       if (node.Value == pin)
       {
@@ -62,7 +71,7 @@ internal static class BreadthFirstSearch
         }
       }
 
-      if (result != null) break;
+      if (result != null || ct.IsCancellationRequested) break;
     }
 
     return result;

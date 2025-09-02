@@ -7,18 +7,20 @@ static class SearchPathFinder
   internal static async Task Find(
     GraphNode? destinationNode,
     GraphNode? startNode,
-    Func<Task> stateChangedAction)
+    Func<Task> stateChangedAction,
+    CancellationToken ct)
   {
     if (destinationNode == null || startNode == null) return;
-    var path = destinationNode;
+    var node = destinationNode;
     var row = startNode.Row;
     var column = startNode.Column;
-    while (path.Value != startNode.Value)
+    while (node.Value != startNode.Value)
     {
-      path.SetIsPartOfReturnPath();
-      path = path.FindClosest(row, column);
-      if (path.IsStart || path.IsDestination) continue;
-      path.AddPathNodeStyle();
+      if(ct.IsCancellationRequested) break;
+      node.SetIsPartOfReturnPath();
+      node = node.FindClosest(row, column);
+      if (node.IsStart || node.IsDestination) continue;
+      node.AddPathNodeStyle();
       await stateChangedAction();
     }
   }

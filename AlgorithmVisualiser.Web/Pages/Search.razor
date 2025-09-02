@@ -51,6 +51,7 @@ else
   private GraphNode? _destinationNode;
   private bool _hasSearched;
   private Func<Task>? _stateChangedAndDelay; 
+  private CancellationTokenSource _cancellationTokenSource; 
 
   protected override async Task OnInitializedAsync()
   {
@@ -62,6 +63,7 @@ else
       StateHasChanged();
       await Task.Delay(25);
     };
+    _cancellationTokenSource = new CancellationTokenSource();
   }
 
   private void CreateNodes()
@@ -72,14 +74,14 @@ else
   private async Task Bfs()
   {
     Guard();
-    await BreadthFirstSearch.Execute(_nodes!, _startNode!, _destinationNode!, _stateChangedAndDelay!);
+    await BreadthFirstSearch.Execute(_nodes!, _startNode!, _destinationNode!, _stateChangedAndDelay!, _cancellationTokenSource.Token);
     _hasSearched = true;
   }
 
   private async Task Dfs()
   {
     Guard();
-    await DepthFirstSearch.Execute(_nodes!, _startNode!, _destinationNode!, _stateChangedAndDelay!);
+    await DepthFirstSearch.Execute(_nodes!, _startNode!, _destinationNode!, _stateChangedAndDelay!, _cancellationTokenSource.Token);
     _hasSearched = true;
   }
   
@@ -87,7 +89,7 @@ else
   {
     Guard();
     if(!_hasSearched) return;
-    await SearchPathFinder.Find(_destinationNode, _startNode, _stateChangedAndDelay!);
+    await SearchPathFinder.Find(_destinationNode, _startNode, _stateChangedAndDelay!, _cancellationTokenSource.Token);
   }
 
   private void Guard()
@@ -120,6 +122,13 @@ else
 
   private void SetDestinationNode(GraphNode destinationNode)
   {
+    _destinationNode?.Reset();
+    if (_destinationNode != null &&
+        _destinationNode?.Value == destinationNode.Value)
+    {
+      _destinationNode = null;
+      return;
+    }
     _destinationNode = destinationNode;
     destinationNode.AddDestinationNodeStyle();
     destinationNode.SetDestination();
@@ -133,6 +142,7 @@ else
     _startNode = null;
     _destinationNode = null;
     _hasSearched = false;
+    _cancellationTokenSource.Cancel();
 
     if (_nodes == null) return;
 
@@ -141,5 +151,7 @@ else
       node.Reset();
     }
     StateHasChanged();
+    _cancellationTokenSource.Dispose();
+    _cancellationTokenSource = new CancellationTokenSource();
   }
 }
