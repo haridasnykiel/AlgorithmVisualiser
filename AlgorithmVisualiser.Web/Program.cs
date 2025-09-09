@@ -12,7 +12,6 @@ internal class Program
     builder.RootComponents.Add<HeadOutlet>("head::after");
 
     builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-    var h  = builder.GetHashCode();
 
     await builder.Build().RunAsync();
   }

@@ -23,7 +23,7 @@ static class NodeHelper
     public static int Max => MaxSize;
     public static SortNode[] Randomise()
     {
-        var nodes = new SortNode[_rnd.Next(10, 80)];
+        var nodes = new SortNode[_rnd.Next(10, 20)];
         for (int i = 0; i < nodes.Length; i++)
         {
             nodes[i] = new SortNode(_rnd.Next(10, 100), 100 / nodes.Length);

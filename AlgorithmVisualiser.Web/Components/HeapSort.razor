@@ -2,141 +2,139 @@
 @using AlgorithmVisualiser.Web.Models
 
 <div class="graph">
-    @if (Nodes != null)
+  @if (Nodes != null)
+  {
+    @foreach (var node in Nodes)
     {
-        @foreach (var node in Nodes)
-        {
-            <div class="node" style=@node.Style></div>
-        }
+      <div class="node" style=@node.Style></div>
     }
+  }
 </div>
 
 @code {
 
-    [Parameter] public SortNode[]? Nodes { get; set; }
+  [Parameter] public SortNode[]? Nodes { get; set; }
+  [Parameter] public bool ShouldSort { get; set; }
+  [Parameter] public EventCallback<bool> SortCompleted { get; set; }
 
-    [Parameter] public bool ShouldSort { get; set; }
-
-    protected override async Task OnInitializedAsync()
+  protected override async Task OnInitializedAsync()
+  {
+    await Task.Delay(50);
+    if (Nodes != null && ShouldSort)
     {
-        await Task.Delay(50);
-        if (Nodes != null && ShouldSort)
-        {
-            var delay = 25;
-            // var heap = new Heap<SortNode>(Nodes.Length);
-            // await Sort(heap, Nodes, delay);
-            await HeapSortV2(Nodes, delay);
-            foreach (var node in Nodes)
-            {
-                node.RemoveBackgroundStyle();
-            }
- 
-            await StateChangedAndDelay(delay);
-        }
+      var delay = 25;
+      await HeapSortV2(Nodes, delay);
+      foreach (var node in Nodes)
+      {
+        node.RemoveBackgroundStyle();
+      }
+
+      await StateChangedAndDelay(delay);
+    }
+    await SortCompleted.InvokeAsync(true);
+  }
+
+  private async Task Sort(Heap<SortNode> heap, SortNode[] nodes, int delay)
+  {
+    await Heapify(heap, nodes, delay);
+
+    var idx = heap.Length - 1;
+    while (heap.Length > 0)
+    {
+      nodes[idx].AddSwapStyle();
+      nodes[idx--] = heap.Delete() ?? throw new Exception();
+      await StateChangedAndDelay(delay);
     }
 
-    private async Task Sort(Heap<SortNode> heap, SortNode[] nodes, int delay)
+    await Task.Delay(delay);
+  }
+
+  private async Task Heapify(Heap<SortNode> heap, SortNode[] nodes, int delay)
+  {
+    foreach (var node in nodes)
     {
-        await Heapify(heap, nodes, delay);
+      heap.Insert(node, node.Value);
+      node.AddSelectStyle();
+      await StateChangedAndDelay(delay);
+    }
+  }
 
-        var idx = heap.Length - 1;
-        while (heap.Length > 0)
-        {
-            nodes[idx].AddSwapStyle();
-            nodes[idx--] = heap.Delete() ?? throw new Exception();
-            await StateChangedAndDelay(delay);
-        }
+  // Using max heap, could do the same but with a min heap. 
+  private async Task HeapSortV2(SortNode[] nodes, int delay)
+  {
+    var idx = nodes.Length;
+    await HeapifyV2(nodes, idx, delay);
 
-        await Task.Delay(delay);
+    while (idx > 0)
+    {
+      idx--;
+      (nodes[idx], nodes[0]) = (nodes[0], nodes[idx]);
+      await SiftDown(nodes, 0, idx, delay);
+    }
+  }
+
+
+  private async Task HeapifyV2(SortNode[] nodes, int endIdx, int delay)
+  {
+    for (int i = endIdx - 1; i >= 0; i--)
+    {
+      await SiftDown(nodes, i, endIdx - 1, delay);
+    }
+  }
+
+  private async Task SiftDown(SortNode[] nodes, int idx, int endIdx, int delay)
+  {
+    var rightChildIdx = GetRightChildIndex(idx);
+    var leftChildIdx = GetLeftChildIndex(idx);
+
+    if (leftChildIdx >= endIdx)
+    {
+      return;
     }
 
-    private async Task Heapify(Heap<SortNode> heap, SortNode[] nodes, int delay)
+    nodes[idx].AddSelectStyle();
+    nodes[rightChildIdx].AddSelectStyle();
+    nodes[leftChildIdx].AddSelectStyle();
+
+    await StateChangedAndDelay(delay);
+
+    if (rightChildIdx >= endIdx)
     {
-        foreach (var node in nodes)
-        {
-            heap.Insert(node, node.Value);
-            node.AddSelectStyle();
-            await StateChangedAndDelay(delay);
-        }
+      nodes[leftChildIdx].AddSwapStyle();
+      nodes[idx].AddSwapStyle();
+      if (nodes[leftChildIdx].Value > nodes[idx].Value) (nodes[idx], nodes[leftChildIdx]) = (nodes[leftChildIdx], nodes[idx]);
+      await StateChangedAndDelay(delay);
+      return;
     }
 
-    // Using max heap, could do the same but with a min heap. 
-    private async Task HeapSortV2(SortNode[] nodes, int delay)
+    if (nodes[rightChildIdx].Value > nodes[leftChildIdx].Value && nodes[rightChildIdx].Value > nodes[idx].Value)
     {
-        var idx = nodes.Length;
-        await HeapifyV2(nodes, idx, delay);
-
-        while (idx > 0)
-        {
-            idx--;
-            (nodes[idx], nodes[0]) = (nodes[0], nodes[idx]);
-            await SiftDown(nodes, 0, idx, delay);
-        }
+      nodes[rightChildIdx].AddSwapStyle();
+      nodes[idx].AddSwapStyle();
+      (nodes[idx], nodes[rightChildIdx]) = (nodes[rightChildIdx], nodes[idx]);
+      idx = rightChildIdx;
+    }
+    else if (nodes[leftChildIdx].Value > nodes[idx].Value)
+    {
+      nodes[leftChildIdx].AddSwapStyle();
+      nodes[idx].AddSwapStyle();
+      (nodes[idx], nodes[leftChildIdx]) = (nodes[leftChildIdx], nodes[idx]);
+      idx = leftChildIdx;
     }
 
+    await StateChangedAndDelay(delay);
 
-    private async Task HeapifyV2(SortNode[] nodes, int endIdx, int delay)
-    {
-        for (int i = endIdx - 1; i >= 0; i--)
-        {
-            await SiftDown(nodes, i, endIdx - 1, delay);
-        }
-    }
+    if (idx != leftChildIdx && idx != rightChildIdx) return;
 
-    private async Task SiftDown(SortNode[] nodes, int idx, int endIdx, int delay)
-    {
-        var rightChildIdx = GetRightChildIndex(idx);
-        var leftChildIdx = GetLeftChildIndex(idx);
+    await SiftDown(nodes, idx, endIdx, delay);
+  }
 
-        if (leftChildIdx >= endIdx)
-        {
-            return;
-        }
-        
-        nodes[idx].AddSelectStyle();
-        nodes[rightChildIdx].AddSelectStyle();
-        nodes[leftChildIdx].AddSelectStyle();
+  private Task StateChangedAndDelay(int delay)
+  {
+    StateHasChanged();
+    return Task.Delay(delay);
+  }
 
-        await StateChangedAndDelay(delay);
-
-        if (rightChildIdx >= endIdx)
-        {
-            nodes[leftChildIdx].AddSwapStyle();
-            nodes[idx].AddSwapStyle();
-            if(nodes[leftChildIdx].Value > nodes[idx].Value) (nodes[idx], nodes[leftChildIdx]) = (nodes[leftChildIdx], nodes[idx]);
-            await StateChangedAndDelay(delay);
-            return;
-        }
-
-        if (nodes[rightChildIdx].Value > nodes[leftChildIdx].Value && nodes[rightChildIdx].Value > nodes[idx].Value) 
-        {
-            nodes[rightChildIdx].AddSwapStyle();
-            nodes[idx].AddSwapStyle();
-            (nodes[idx], nodes[rightChildIdx]) = (nodes[rightChildIdx], nodes[idx]);
-            idx = rightChildIdx;
-        }
-        else if(nodes[leftChildIdx].Value > nodes[idx].Value)
-        {
-            nodes[leftChildIdx].AddSwapStyle();
-            nodes[idx].AddSwapStyle();
-            (nodes[idx], nodes[leftChildIdx]) = (nodes[leftChildIdx], nodes[idx]);
-            idx = leftChildIdx;
-        }
-
-        await StateChangedAndDelay(delay);
-
-        if (idx != leftChildIdx && idx != rightChildIdx) return;
-
-        await SiftDown(nodes, idx, endIdx, delay);
-    }
-
-    private Task StateChangedAndDelay(int delay)
-    {
-        StateHasChanged();
-        return Task.Delay(delay);
-    }
-
-    private static int GetParentIndex(int index) => (index - 1) / 2;
-    private static int GetLeftChildIndex(int index) => index * 2 + 1;
-    private static int GetRightChildIndex(int index) => index * 2 + 2;
+  private static int GetLeftChildIndex(int index) => index * 2 + 1;
+  private static int GetRightChildIndex(int index) => index * 2 + 2;
 }

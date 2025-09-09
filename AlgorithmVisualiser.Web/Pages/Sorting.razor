@@ -18,87 +18,100 @@
 
 @if (_nodes == null)
 {
-    <p>
-        <em>Loading...</em>
-    </p>
+  <p>
+    <em>Loading...</em>
+  </p>
 }
 else
 {
-    @switch (_sortType)
-    {
-        case SortType.MergeSort:
-            <MergeSort Nodes=@_nodes ShouldSort=@_shouldSort/>
-            break;
-        case SortType.QuickSort:
-            <QuickSort Nodes=@_nodes ShouldSort=@_shouldSort/>
-            break;
-        case SortType.SelectionSort:
-            <SelectionSort Nodes=@_nodes ShouldSort=@_shouldSort/>
-            break;
-        case SortType.BubbleSort:
-            <BubbleSort Nodes=@_nodes ShouldSort=@_shouldSort/>
-            break;
-        case SortType.HeapSort:
-            <HeapSort Nodes=@_nodes ShouldSort=@_shouldSort/>
-            break;
-        default:
-            <div class="graph">
-                @foreach (var node in _nodes)
-                {
-                    <div class="node" style=@node.Style></div>
-                }
-            </div>
-            break;
-    }
+  @switch (_sortType)
+  {
+    case SortType.MergeSort:
+      <MergeSort Nodes=@_nodes ShouldSort=@_shouldSort/>
+      break;
+    case SortType.QuickSort:
+      <QuickSort Nodes=@_nodes ShouldSort=@_shouldSort/>
+      break;
+    case SortType.SelectionSort:
+      <SelectionSort Nodes=@_nodes ShouldSort=@_shouldSort/>
+      break;
+    case SortType.BubbleSort:
+      <BubbleSort Nodes=@_nodes ShouldSort=@_shouldSort SortCompleted="SortComplete"/>
+      break;
+    case SortType.HeapSort:
+      <HeapSort Nodes=@_nodes ShouldSort=@_shouldSort SortCompleted="SortComplete"/>
+      break;
+    default:
+      <div class="graph">
+        @foreach (var node in _nodes)
+        {
+          <div class="node" style=@node.Style></div>
+        }
+      </div>
+      break;
+  }
+
+  if (_sortComplete)
+  {
+    <h5 class="complete">Finish</h5>
+  }
 }
 
 @code {
-    private SortNode[]? _nodes;
-    private SortType _sortType;
-    private bool _shouldSort;
+  private SortNode[]? _nodes;
+  private SortType _sortType;
+  private bool _shouldSort;
+  private bool _sortComplete;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await Task.Delay(500);
-        _shouldSort = false;
-        _sortType = SortType.None;
-        Randomise();
-    }
+  protected override async Task OnInitializedAsync()
+  {
+    await Task.Delay(500);
+    _shouldSort = false;
+    _sortType = SortType.None;
+    Randomise();
+  }
 
-    private void Randomise()
-    {
-        _shouldSort = false;
-        _sortType = SortType.None;
-        _nodes = NodeHelper.Randomise();
-    }
+  private void Randomise()
+  {
+    _shouldSort = false;
+    _sortComplete = false;
+    _sortType = SortType.None;
+    _nodes = NodeHelper.Randomise();
+  }
 
-    private void MergeSort()
-    {
-        _sortType = SortType.MergeSort;
-        _shouldSort = true;
-    }
+  private void SortComplete()
+  {
+    _sortComplete = true;
+  }
 
-    private void QuickSort()
-    {
-        _sortType = SortType.QuickSort;
-        _shouldSort = true;
-    }
+  private void MergeSort()
+  {
+    _sortType = SortType.MergeSort;
+    _shouldSort = true;
+  }
 
-    private void SelectionSort()
-    {
-        _sortType = SortType.SelectionSort;
-        _shouldSort = true;
-    }
+  private void QuickSort()
+  {
+    _sortType = SortType.QuickSort;
+    _shouldSort = true;
+  }
 
-    private void BubbleSort()
-    {
-        _sortType = SortType.BubbleSort;
-        _shouldSort = true;
-    }
+  private void SelectionSort()
+  {
+    _sortType = SortType.SelectionSort;
+    _shouldSort = true;
+  }
 
-    private void HeapSort()
-    {
-        _sortType = SortType.HeapSort;
-        _shouldSort = true;
-    }
+  private void BubbleSort()
+  {
+    _sortType = SortType.BubbleSort;
+    _shouldSort = true;
+  }
+
+  private void HeapSort()
+  {
+    _sortType = SortType.HeapSort;
+    _shouldSort = true;
+  }
+
 }
