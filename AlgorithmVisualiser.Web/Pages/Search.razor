@@ -51,7 +51,7 @@ else
   private GraphNode? _destinationNode;
   private bool _hasSearched;
   private Func<Task>? _stateChangedAndDelay; 
-  private CancellationTokenSource _cancellationTokenSource; 
+  private CancellationTokenSource? _cancellationTokenSource; 
 
   protected override async Task OnInitializedAsync()
   {
