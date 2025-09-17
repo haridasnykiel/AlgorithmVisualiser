@@ -1,4 +1,5 @@
 @page "/path-finder"
+@using System.Text
 @using AlgorithmVisualiser.Web.Helpers
 @using AlgorithmVisualiser.Web.Models
 <h3>PathFinder</h3>
@@ -28,7 +29,7 @@ else
                 style=@node.Style>@node.Value W @node.Weight</button>
       }
 
-      if (node.Row >= NodeHelper.Max)
+      if (node.Row >= NodeHelper.MaxRow)
       {
         <div class="line-break"></div>
       }
@@ -37,19 +38,19 @@ else
 }
 
 @code {
-  
+
   private GraphNode[]? _nodes;
   private GraphNode? _startNode;
   private GraphNode? _destinationNode;
-  private CancellationTokenSource? _cancellationTokenSource; 
-  
+  private CancellationTokenSource? _cancellationTokenSource;
+
   protected override async Task OnInitializedAsync()
   {
     await Task.Delay(500);
     CreateNodes();
     _cancellationTokenSource = new CancellationTokenSource();
   }
-  
+
   private void SetStartNode(GraphNode startNode)
   {
     _startNode = startNode;
@@ -57,7 +58,7 @@ else
     _startNode.SetStart();
     StateHasChanged();
   }
-  
+
   private void CreateNodes()
   {
     _nodes = NodeHelper.Create100GraphNodes();
@@ -72,29 +73,39 @@ else
       _destinationNode = null;
       return;
     }
+
     _destinationNode = destinationNode;
     destinationNode.AddDestinationNodeStyle();
     destinationNode.SetDestination();
     StateHasChanged();
   }
 
-  private async Task RunDijkstra()
+  private async Task<string> RunDijkstra()
   {
-    if(_nodes == null || _startNode == null || _destinationNode == null) return;
+    if (_cancellationTokenSource.IsCancellationRequested)
+    {
+      _cancellationTokenSource.Dispose();
+      _cancellationTokenSource = new CancellationTokenSource();
+    }
+    if (_nodes == null || _startNode == null || _destinationNode == null) return string.Empty;
     var result = await Dijkstra(_nodes, _startNode, _destinationNode);
+    var weightSum = 0;
     foreach (var node in result)
     {
-      node.AddPathNodeStyle();
-      StateHasChanged();
-      await Task.Delay(25);
+      weightSum += node.Weight;
     }
+
+    return weightSum.ToString();
   }
+
+
   private async Task<GraphNode[]> Dijkstra(GraphNode[] nodes, GraphNode source, GraphNode pin)
   {
     if (_nodes is null)
     {
       return [];
     }
+
     var visited = new bool[_nodes.Length];
     var previous = new int[_nodes.Length];
     var distances = new int[_nodes.Length];
@@ -107,16 +118,23 @@ else
     }
 
     distances[int.Parse(source.Value) - 1] = 0;
-    while(visited.Any(v => !v))
+    while (visited.Any(v => !v))
     {
-      var smallestUnvisitedEdge = GetSmallestUnvisitedEdge(nodes, visited, distances);
-      if(smallestUnvisitedEdge is null) continue;
+      if (_cancellationTokenSource != null && _cancellationTokenSource.IsCancellationRequested) break;
+      var smallestUnvisitedEdge = await GetSmallestUnvisitedEdge(nodes, visited, distances);
+      if (smallestUnvisitedEdge is null) continue;
       var idx = int.Parse(smallestUnvisitedEdge.Value) - 1;
       visited[idx] = true;
+      await SetStyleIfNotStartOrDestination(smallestUnvisitedEdge, async () =>
+      {
+        smallestUnvisitedEdge.AddVisitedStyle();
+        await StateChanged();
+      });
 
       foreach (var edge in smallestUnvisitedEdge.Connections)
       {
-        if(edge is null) continue;
+        if (_cancellationTokenSource != null && _cancellationTokenSource.IsCancellationRequested) break;
+        if (edge is null) continue;
         var edgeIdx = int.Parse(edge.Value) - 1;
         if (visited[edgeIdx]) continue;
         var newDist = distances[idx] + edge.Weight;
@@ -124,34 +142,62 @@ else
         {
           distances[edgeIdx] = newDist;
           previous[edgeIdx] = idx;
+          await SetStyleIfNotStartOrDestination(edge, () => SetVisitedThenReset(edge));
         }
       }
     }
-    
+
     var result = new List<GraphNode>();
     var pinIdx = int.Parse(pin.Value) - 1;
     while (previous[pinIdx] != -1)
     {
       result.Add(nodes[pinIdx]);
       pinIdx = previous[pinIdx];
+      if (!nodes[pinIdx].IsStart && !nodes[pinIdx].IsDestination)
+      {
+        await SetStyleIfNotStartOrDestination(nodes[pinIdx], async () =>
+        {
+          nodes[pinIdx].AddPathNodeStyle();
+          await StateChanged();
+        });
+      }
     }
 
     return result.ToArray();
   }
 
-  private static GraphNode? GetSmallestUnvisitedEdge(GraphNode[] nodes, bool[] visited, int[] distances)
+  private async Task SetVisitedThenReset(GraphNode node)
+  {
+    node.AddVisitedStyle();
+    await StateChanged();
+    node.Reset();
+    await StateChanged();
+  }
+
+  private async Task SetStyleIfNotStartOrDestination(GraphNode node, Func<Task> func)
+  {
+    if (!node.IsStart && !node.IsDestination)
+    {
+      await func();
+    }
+  }
+
+  private async Task<GraphNode?> GetSmallestUnvisitedEdge(GraphNode[] nodes, bool[] visited, int[] distances)
   {
     GraphNode? smallestEdge = null;
     for (int i = 0; i < nodes.Length; i++)
     {
+      if (_cancellationTokenSource != null && _cancellationTokenSource.IsCancellationRequested) break;
       var hasVisited = visited[i];
       var distance = distances[i];
       if (hasVisited) continue;
       if (smallestEdge is null || distance < distances[int.Parse(smallestEdge.Value) - 1])
       {
         smallestEdge = nodes[i];
+        await SetStyleIfNotStartOrDestination(smallestEdge, () => SetVisitedThenReset(smallestEdge));
       }
     }
+
     return smallestEdge;
   }
 
@@ -169,8 +215,14 @@ else
     {
       node.Reset();
     }
+
     StateHasChanged();
-    _cancellationTokenSource?.Dispose();
-    _cancellationTokenSource = new CancellationTokenSource();
   }
+
+  private async Task StateChanged()
+  {
+    StateHasChanged();
+    await Task.Delay(25);
+  }
+
 }

@@ -24,7 +24,7 @@ static class NodeHelper
     _rnd = new Random();
   }
 
-  public static int Max => MaxSize;
+  public static int MaxRow => MaxSize;
 
   public static SortNode[] Randomise()
   {
