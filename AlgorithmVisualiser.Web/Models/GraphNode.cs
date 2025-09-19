@@ -2,12 +2,12 @@ using System.Collections.Immutable;
 
 namespace AlgorithmVisualiser.Web.Models;
 
-public class GraphNode
+public class GraphNode : IEquatable<GraphNode>
 {
-  private string _value;
+  private readonly string _value;
   private GraphNode?[] _connections;
   private int _connectionIdx;
-  private int _romIdx;
+  private int _rowIdx;
   private int _columnIdx;
   private string _style;
   private bool _isStart;
@@ -32,7 +32,7 @@ public class GraphNode
 
   public string Value => _value;
   public int Column => _columnIdx;
-  public int Row => _romIdx;
+  public int Row => _rowIdx;
   public bool IsStart => _isStart;
   public bool IsDestination => _isDestination;
   public string Style => _style;
@@ -76,7 +76,7 @@ public class GraphNode
 
   public GraphNode AddRowIdx(int rowIdx)
   {
-    _romIdx = rowIdx;
+    _rowIdx = rowIdx;
     return this;
   }
 
@@ -109,5 +109,25 @@ public class GraphNode
     _hasVisited = false;
     _isPartOfReturnPath = false;
     _style = null;
+  }
+
+  public bool Equals(GraphNode? other)
+  {
+    if (other is null) return false;
+    if (ReferenceEquals(this, other)) return true;
+    return _value == other._value;
+  }
+
+  public override bool Equals(object? obj)
+  {
+    if (obj is null) return false;
+    if (ReferenceEquals(this, obj)) return true;
+    if (obj.GetType() != GetType()) return false;
+    return Equals((GraphNode)obj);
+  }
+
+  public override int GetHashCode()
+  {
+    return HashCode.Combine(_value);
   }
 }

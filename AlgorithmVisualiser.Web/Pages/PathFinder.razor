@@ -1,5 +1,4 @@
 @page "/path-finder"
-@using System.Text
 @using AlgorithmVisualiser.Web.Helpers
 @using AlgorithmVisualiser.Web.Models
 <h3>PathFinder</h3>
@@ -25,7 +24,7 @@ else
       }
       else
       {
-        <button class="maze-node" @onclick="@(e => SetDestinationNode(node))"
+        <button class="maze-node" @onclick="@(e => AddDestinationNode(node))"
                 style=@node.Style>@node.Value W @node.Weight</button>
       }
 
@@ -41,7 +40,7 @@ else
 
   private GraphNode[]? _nodes;
   private GraphNode? _startNode;
-  private GraphNode? _destinationNode;
+  private HashSet<GraphNode>? _destinationNodes;
   private CancellationTokenSource? _cancellationTokenSource;
 
   protected override async Task OnInitializedAsync()
@@ -62,19 +61,19 @@ else
   private void CreateNodes()
   {
     _nodes = NodeHelper.Create100GraphNodes();
+    _destinationNodes = new HashSet<GraphNode>();
   }
 
-  private void SetDestinationNode(GraphNode destinationNode)
+  private void AddDestinationNode(GraphNode destinationNode)
   {
-    _destinationNode?.Reset();
-    if (_destinationNode != null &&
-        _destinationNode?.Value == destinationNode.Value)
+    if(_destinationNodes is null) return;
+    if (!_destinationNodes.Add(destinationNode))
     {
-      _destinationNode = null;
+      destinationNode.Reset();
+      _destinationNodes.Remove(destinationNode);
       return;
     }
 
-    _destinationNode = destinationNode;
     destinationNode.AddDestinationNodeStyle();
     destinationNode.SetDestination();
     StateHasChanged();
@@ -87,8 +86,8 @@ else
       _cancellationTokenSource.Dispose();
       _cancellationTokenSource = new CancellationTokenSource();
     }
-    if (_nodes == null || _startNode == null || _destinationNode == null) return string.Empty;
-    var result = await Dijkstra(_nodes, _startNode, _destinationNode);
+    if (_nodes == null || _startNode == null || _destinationNodes == null) return string.Empty;
+    var result = await Dijkstra(_nodes, _startNode, _destinationNodes.ToList());
     var weightSum = 0;
     foreach (var node in result)
     {
@@ -99,7 +98,7 @@ else
   }
 
 
-  private async Task<GraphNode[]> Dijkstra(GraphNode[] nodes, GraphNode source, GraphNode pin)
+  private async Task<GraphNode[]> Dijkstra(GraphNode[] nodes, GraphNode source, List<GraphNode> pins)
   {
     if (_nodes is null)
     {
@@ -148,18 +147,22 @@ else
     }
 
     var result = new List<GraphNode>();
-    var pinIdx = int.Parse(pin.Value) - 1;
-    while (previous[pinIdx] != -1)
+    for (int i = 0; i < pins.Count; i++)
     {
-      result.Add(nodes[pinIdx]);
-      pinIdx = previous[pinIdx];
-      if (!nodes[pinIdx].IsStart && !nodes[pinIdx].IsDestination)
+      var pin = pins[i];
+      var pinIdx = int.Parse(pin.Value) - 1;
+      while (previous[pinIdx] != -1)
       {
-        await SetStyleIfNotStartOrDestination(nodes[pinIdx], async () =>
+        result.Add(nodes[pinIdx]);
+        pinIdx = previous[pinIdx];
+        if (!nodes[pinIdx].IsStart && !nodes[pinIdx].IsDestination)
         {
-          nodes[pinIdx].AddPathNodeStyle();
-          await StateChanged();
-        });
+          await SetStyleIfNotStartOrDestination(nodes[pinIdx], async () =>
+          {
+            nodes[pinIdx].AddPathNodeStyle();
+            await StateChanged();
+          });
+        }
       }
     }
 
@@ -204,9 +207,9 @@ else
   private void Reset()
   {
     _startNode?.Reset();
-    _destinationNode?.Reset();
+    _destinationNodes?.ToList().ForEach(n => n.Reset());
     _startNode = null;
-    _destinationNode = null;
+    _destinationNodes = null;
     _cancellationTokenSource?.Cancel();
 
     if (_nodes == null) return;
